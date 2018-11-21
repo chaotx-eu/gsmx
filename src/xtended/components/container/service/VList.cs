@@ -12,22 +12,12 @@ namespace GSMXtended {
     public class VList : MenuList {
         public VList(params Control[] items) : base(items) {
             IsStatic = true;
-            KeyPressedEvent += (sender, args) => {
-                if(!IsFocused || InputLocked) return;
-                if(args.KeyboardState != null && args.KeyboardState.Value.IsKeyDown(Keys.Up)
-                || args.GamePadState != null && (args.GamePadState.Value.IsButtonDown(Buttons.DPadUp)
-                || args.GamePadState.Value.IsButtonDown(Buttons.LeftThumbstickUp))) {
-                    select(-1);
-                    InputTimer = 0;
-                }
 
-                if(args.KeyboardState != null && args.KeyboardState.Value.IsKeyDown(Keys.Down)
-                || args.GamePadState != null && (args.GamePadState.Value.IsButtonDown(Buttons.DPadDown)
-                || args.GamePadState.Value.IsButtonDown(Buttons.LeftThumbstickDown))) {
-                    select();
-                    InputTimer = 0;
-                }
-            };
+            // default selection keys/buttons
+            ControlNextKeys = new List<Keys>(new Keys[]{Keys.Down});
+            ControlNextButtons = new List<Buttons>(new Buttons[]{Buttons.DPadDown, Buttons.LeftThumbstickDown});
+            ControlPreviousKeys = new List<Keys>(new Keys[]{Keys.Up});
+            ControlPreviousButtons = new List<Buttons>(new Buttons[]{Buttons.DPadUp, Buttons.LeftThumbstickUp});
         }
 
         /// Public wrapper for the add method which only
@@ -36,9 +26,9 @@ namespace GSMXtended {
             foreach(ScreenComponent sc in items)
                 if(sc is Control) base.add(sc);
         }
-
-        private int timer;
-        public override void update(GameTime time) {
+        
+        public override void align() {
+            base.align();
             if(Managed && (PercentHeight < 0 || PercentWidth < 0)) {
                 // height always as small as possible
                 int h = 0, wMax = 0, hMax = 0;
@@ -56,11 +46,11 @@ namespace GSMXtended {
                 if(PercentHeight < 0) Height = IsStatic ? h : hMax;
                 if(PercentWidth < 0) Width = wMax;
             }
-
-            base.update(time);
         }
-
-        protected override void onUpdate(ScreenComponent child) {
+        
+        protected override void alignChild(ScreenComponent child) {
+            base.alignChild(child);
+            
             if(IsStatic) {
                 VPane.align(this, child);
                 return;

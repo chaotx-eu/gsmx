@@ -30,7 +30,7 @@ namespace GSMXtended {
             }
         }
 
-        /// Bakground texture of this container
+        /// Background texture of this container
         public Texture2D Texture {get; set;}
 
         /// The path to the file with the background texture
@@ -63,11 +63,16 @@ namespace GSMXtended {
         /// this container
         public override void load() {
             base.load();
-
             Texture = TextureFile == null ? ParentScreen.BlankTexture
                 : ParentScreen.Content.Load<Texture2D>(TextureFile);
 
             Children.ToList().ForEach(c => c.load());
+        }
+
+        /// Initializes this container and its components
+        public override void init() {
+            base.init();
+            Children.ToList().ForEach(c => c.init());
         }
 
         /// Draws all compononents within this container
@@ -83,6 +88,18 @@ namespace GSMXtended {
         /// and its own size aswell if Managed is true and the
         /// ParentContainer is null
         public override void update(GameTime time) {
+            align();
+            Children.Where(c => c.Managed).ToList().ForEach(child => {
+                alignChild(child);
+                onUpdate(child);
+                child.update(time);
+            });
+            base.update(time);
+        }
+
+        /// Sets the size of this container and aligns
+        /// it relative to its parent
+        public virtual void align() {
             if(Managed && ParentContainer == null) {
                 if(PercentWidth >= 0) Width =
                     (int)((PercentWidth/100f)*ParentScreen.Width);
@@ -90,19 +107,27 @@ namespace GSMXtended {
                 if(PercentHeight >= 0) Height =
                     (int)((PercentHeight/100f)*ParentScreen.Height);
             }
+        }
 
-            Children.Where(c => c.Managed).ToList().ForEach(child => {
-                if(child.PercentWidth >= 0)
-                    child.Width = (int)((child.PercentWidth/100f)*Width);
-
-                if(child.PercentHeight >= 0)
-                    child.Height = (int)((child.PercentHeight/100f)*Height);
-                    
-                onUpdate(child);
-                child.update(time);
+        /// Helper to align all children and set their size
+        public void alignChildren() {
+            Children.ToList().ForEach(child => {
+                alignChild(child);
+                if(child is Container) {
+                    ((Container)child).align();
+                    ((Container)child).alignChildren();
+                }
             });
+        }
 
-            base.update(time);
+        /// Sets the size and aligns the children
+        /// of this container during the update method
+        protected virtual void alignChild(ScreenComponent child) {
+            if(child.PercentWidth >= 0)
+                child.Width = (int)((child.PercentWidth/100f)*Width);
+
+            if(child.PercentHeight >= 0)
+                child.Height = (int)((child.PercentHeight/100f)*Height);
         }
 
         /// Gets called on each child within the update method

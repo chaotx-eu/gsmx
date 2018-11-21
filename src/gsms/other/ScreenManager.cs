@@ -112,7 +112,7 @@ namespace GameStateManagement
             ContentManager content = Game.Content;
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            font = content.Load<SpriteFont>("fonts/menufont");
+            font = content.Load<SpriteFont>("fonts/menu_font1");
             blankTexture = content.Load<Texture2D>("images/blank");
 
             // Tell each of the screens to load their content.

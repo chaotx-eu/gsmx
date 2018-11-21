@@ -4,7 +4,7 @@ namespace GameStateManagement {
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Content;
 
-    internal class BackgroundScreen : GameScreen {
+    public class BackgroundScreen : GameScreen {
         private string imagePath;
         private Texture2D image;
         private ContentManager content;

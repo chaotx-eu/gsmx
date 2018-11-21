@@ -21,14 +21,6 @@ namespace GSMXtended {
 
         /// The base height in pixels of this component
         public virtual int Height {get; set;}
-
-        /// Width of the item in pixels with all relevant
-        /// properties applied (e.g. scale, padding)
-        // public virtual int TrueWidth {get {return Width;}}
-
-        // /// Height of the item in pixels with all relevant
-        // /// properties applied (e.g. scale, padding)
-        // public virtual int TrueHeight {get {return Width;}}
         
         /// The percentage width of this component relative
         /// to its ParentContainers width or in case there
@@ -65,11 +57,6 @@ namespace GSMXtended {
             set {targetAlpha = value;}
         }
 
-        /// The alpha value target by this component
-        public virtual float TargetAlpha { get {
-            return targetAlpha;
-        }}
-
         /// Alpha value used for effects and similiar
         /// (alpha will be multiplied with this value)
         private float effectAlpha, targetEffectAlpha = 1f;
@@ -91,9 +78,12 @@ namespace GSMXtended {
         /// Target y-coordinate
         public float TargetY {get {return targetY;}}
 
+        /// Target alpha value
+        public float TargetAlpha {get {return targetAlpha;}}
+
         /// How many pixels per second this component can
         /// move, values below < 0 are equivalent to inifinite
-        public int PixelPerSecond {get; set;} = 320;
+        public int PixelPerSecond {get; set;} = 288;
 
         /// How many milliseconds it will take to fade
         /// the background alpha from 0 to 1
@@ -110,14 +100,22 @@ namespace GSMXtended {
         /// Wether this component should calculate its position
         /// and size dynamically based of its Alignment, PercentWidth
         /// and -Height and the layout strategy of the ParentContainer
-        public bool Managed {get; set;} = true;
+        public bool Managed {get; set;} = true; // TODO not really in use anymore
 
         /// Event handler which gets triggered when a key or button is
         /// pressed while this item is selected/active
         public event KeyEventHandler KeyPressedEvent;
 
+        /// Number of immediate updates in which positioning
+        /// (TODO sizing and scaling?) will be immediate
+        protected int immediateUpdates = 3; // Three are at least required for
+                                            // everything to align properly
+
         /// Loads the required ressources
         public virtual void load() {}
+
+        /// Initializes component
+        public virtual void init() {}
 
         /// The update method of this component which is meant to
         /// be called once every game tick
@@ -125,15 +123,16 @@ namespace GSMXtended {
         public virtual void update(GameTime time) {
             float fragment;
 
-            if(PixelPerSecond > 0) {
+            if(immediateUpdates <= 0 && PixelPerSecond > 0) {
                 fragment = (float)(time.ElapsedGameTime.Milliseconds/1000f)*PixelPerSecond;
                 if(x < targetX) x = Math.Min(targetX, x+fragment);
                 if(x > targetX) x = Math.Max(targetX, x-fragment);
                 if(y < targetY) y = Math.Min(targetY, y+fragment);
                 if(y > targetY) y = Math.Max(targetY, y-fragment);
-            } else {
+            } else if(x != targetX || y != targetY) {
                 x = targetX;
                 y = targetY;
+                if(immediateUpdates > 0) --immediateUpdates;
             }
 
             if(MillisPerAlpha > 0) {

@@ -51,6 +51,7 @@ namespace GSMXtended {
 
         /// Loads the image file
         public override void load() {
+            base.load();
             ContentManager content =  ParentScreen.ScreenManager.Game.Content;
             Image = content.Load<Texture2D>(ImageFile);
 

@@ -33,7 +33,7 @@ namespace GameStateManagement
     ///   next screen, which may take a long time to load its data. The loading
     ///   screen will be the only thing displayed while this load is taking place.
     /// </summary>
-    internal class LoadingScreen : GameScreen
+    public class LoadingScreen : GameScreen
     {
         #region Fields
 

@@ -35,6 +35,18 @@ namespace GSMXtended {
         /// List of gamepad buttons which can trigger a cancel event
         public List<Buttons> CancelButtons {get; set;}
 
+        /// List of keyboard keys with which the next item is selected
+        public List<Keys> ControlNextKeys {get; set;}
+
+        /// List of gamepad buttons with which the next item is selected
+        public List<Buttons> ControlNextButtons {get; set;}
+
+        /// List of keyboard keys with which the previous item is selected
+        public List<Keys> ControlPreviousKeys {get; set;}
+        
+        /// List of gamepad buttons with which the previous item is selected
+        public List<Buttons> ControlPreviousButtons {get; set;}
+
         /// Currently selected item in this menu
         private MenuItem selected, lastSelected;
         public Control SelectedItem {get {return selected;}}
@@ -69,13 +81,32 @@ namespace GSMXtended {
             get {return InputTimer < MillisPerInput;}
         }
 
+        /// If true a pressed key/button has to be released first
+        /// before it can trigger an key pressed event again
+        public bool InputSingleMode {get; set;}
+
         /// The number of items visible next to the selected
         /// item if this Menu is dynamic (i.e. IsStatic == false)
         public int VisibleRange {get; set;} = 1;
 
-        /// How many milliseconds will pass until the
-        /// next user input is going to be queued
-        public int MillisPerInput {get; set;} = 144;
+        /// How many milliseconds have to pass until the
+        /// next user input can be queued
+        private int millisPerInput = 240, trueMillisPerInput;
+        public int MillisPerInput {
+            get {return trueMillisPerInput;}
+            set {millisPerInput = value;}
+        }
+
+        /// Minimum milliseconds between inputs
+        public int MinMillisPerInput {get; set;} = 112;
+
+        /// Deaccaleration of MilliesPerInput within a second
+        /// which starts when a key is pressed and not released
+        /// during the next queue
+        public int MillisPerInputDeacceleration {get; set;} = 128;
+
+        private List<Keys> lastKeys = new List<Keys>();
+        private List<Buttons> lastButtons = new List<Buttons>();
 
         /// The index of the selected item, it can
         /// be used to select a specific item
@@ -84,8 +115,9 @@ namespace GSMXtended {
             get {return selectedIndex;}
             set {
                 try {
-                    selectedIndex = value;
+                    lastSelectedIndex = selectedIndex;
                     lastSelected = selected;
+                    selectedIndex = value;
                     selected = (MenuItem)Children[value];
                     selected.IsSelected = true;
                     onSelected(new SelectedEventArgs(selectedIndex, selected));
@@ -99,7 +131,6 @@ namespace GSMXtended {
                 }
             }
         }
-
 
         public MenuList(params Control[] items) : base(items) {
             // size of this pane depends on its children
@@ -122,36 +153,92 @@ namespace GSMXtended {
                 if(!IsFocused || InputLocked) return;
 
                 // TODO -> DRY!
+                foreach(Keys key in ControlNextKeys) {
+                    if(args.KeyboardState.Value.IsKeyDown(key)) {
+                        if(lastKeys.Contains(key)) {
+                            if(InputSingleMode) return;
+                        } else lastKeys.Add(key);
+                        InputTimer = 0;
+                        select();
+                    } else lastKeys.Remove(key);
+                }
+
+                foreach(Buttons button in ControlNextButtons) {
+                    if(args.GamePadState.Value.IsButtonDown(button)) {
+                        if(lastButtons.Contains(button)) {
+                            if(InputSingleMode) return;
+                        } else lastButtons.Add(button);
+                        InputTimer = 0;
+                        select();
+                    } else lastButtons.Remove(button);
+                }
+
+                foreach(Keys key in ControlPreviousKeys) {
+                    if(args.KeyboardState.Value.IsKeyDown(key)) {
+                        if(lastKeys.Contains(key)) {
+                            if(InputSingleMode) return;
+                        } else lastKeys.Add(key);
+                        InputTimer = 0;
+                        select(-1);
+                    } else lastKeys.Remove(key);
+                }
+
+                foreach(Buttons button in ControlPreviousButtons) {
+                    if(args.GamePadState.Value.IsButtonDown(button)) {
+                        if(lastButtons.Contains(button)) {
+                            if(InputSingleMode) return;
+                        } else lastButtons.Add(button);
+                        InputTimer = 0;
+                        select(-1);
+                    } else lastButtons.Remove(button);
+                }
+
                 foreach(Keys key in ActionKeys) {
                     if(args.KeyboardState.Value.IsKeyDown(key)) {
+                        if(lastKeys.Contains(key)) {
+                            if(InputSingleMode) return;
+                        } else lastKeys.Add(key);
+
                         onAction(new SelectedEventArgs(SelectedIndex, SelectedItem));
                         InputTimer = 0;
                         return;
-                    }
+                    } else lastKeys.Remove(key);
                 }
 
                 foreach(Buttons button in ActionButtons) {
                     if(args.GamePadState.Value.IsButtonDown(button)) {
+                        if(lastButtons.Contains(button)) {
+                            if(InputSingleMode) return;
+                        } else lastButtons.Add(button);
+
                         onAction(new SelectedEventArgs(SelectedIndex, SelectedItem));
                         InputTimer = 0;
                         return;
-                    }
+                    } else lastButtons.Remove(button);
                 }
 
                 foreach(Keys key in CancelKeys) {
                     if(args.KeyboardState.Value.IsKeyDown(key)) {
+                        if(lastKeys.Contains(key)) {
+                            if(InputSingleMode) return;
+                        } else lastKeys.Add(key);
+
                         onCancel(null);
                         InputTimer = 0;
                         return;
-                    }
+                    } else lastKeys.Remove(key);
                 }
 
                 foreach(Buttons button in CancelButtons) {
                     if(args.GamePadState.Value.IsButtonDown(button)) {
+                        if(lastButtons.Contains(button)) {
+                            if(InputSingleMode) return;
+                        } else lastButtons.Add(button);
+
                         onCancel(null);
                         InputTimer = 0;
                         return;
-                    }
+                    } else lastButtons.Remove(button);
                 }
             };
         }
@@ -189,8 +276,15 @@ namespace GSMXtended {
 
         /// Updates the inputTimer and locks/unlocks user input
         public override void update(GameTime time) {
+            int elapsed = time.ElapsedGameTime.Milliseconds;
             if(InputTimer < MillisPerInput)
-                InputTimer += time.ElapsedGameTime.Milliseconds;
+                InputTimer += elapsed;
+
+            // deaccelerate while any key/button is pressed
+            if(lastKeys.Count > 0 || lastButtons.Count > 0) {
+                trueMillisPerInput = (int)Math.Max(MinMillisPerInput,
+                    trueMillisPerInput - MillisPerInputDeacceleration*(elapsed/1000f));
+            } else trueMillisPerInput = millisPerInput;
 
             base.update(time);
         }

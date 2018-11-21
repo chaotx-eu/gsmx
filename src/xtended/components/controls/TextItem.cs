@@ -43,6 +43,7 @@ namespace GSMXtended {
 
         /// Loads the font file
         public override void load() {
+            base.load();
             ContentManager content =  ParentScreen.ScreenManager.Game.Content;
             Font = content.Load<SpriteFont>(FontFile);
         }

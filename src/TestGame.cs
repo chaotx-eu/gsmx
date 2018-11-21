@@ -144,7 +144,7 @@
                 if(args.SelectedItem == option9) {
                     dialog.Alpha = 1;
                     hDialog.Alpha = 0.5f; // TODO => ...
-                    hListD.IsFocused = true; // TODO => schould gain focus on screen add
+                    hListD.IsFocused = true; // TODO => should gain focus on screen add
                     screenManager.AddScreen(dialog, null);
                 }
             };

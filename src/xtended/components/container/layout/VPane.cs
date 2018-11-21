@@ -15,7 +15,8 @@ namespace GSMXtended {
         }
 
         /// Updates height of this VPane
-        public override void update(GameTime time) {
+        public override void align() {
+            base.align();
             if(Managed && (PercentHeight < 0 || PercentWidth < 0)) {
                 int w = 0, h = 0;
                 Children.ToList().ForEach(c => {
@@ -26,15 +27,15 @@ namespace GSMXtended {
                 if(PercentHeight < 0) Height = h;
                 if(PercentWidth < 0) Width = w;
             }
-
-            base.update(time);
         }
 
         /// Aligns children vertically (similar to VBox in JavaFX)
-        protected override void onUpdate(ScreenComponent child) {
+        protected override void alignChild(ScreenComponent child) {
+            base.alignChild(child);
             align(this, child);
         }
 
+        /// TODO rename to vAlign
         /// Aligns the child within the parent with the policy of a Vpane
         public static void align(Container parent, ScreenComponent child) {
             float y;

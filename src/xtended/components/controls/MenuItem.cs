@@ -39,6 +39,12 @@ namespace GSMXtended {
             set {targetEffectScale = value;}
         }
 
+        /// Target scale value
+        public float TargetScale {get {return targetScale;}}
+
+        /// Target effect scale value
+        public float TargetEffectScale {get {return targetEffectScale;}}
+
         /// Width of the item in pixels without any scaling applied
         public virtual int BaseWidth {get {return Width;}}
 
@@ -50,7 +56,7 @@ namespace GSMXtended {
         ///      -> see BesmashContent.MapObject for how its done
         public virtual float Rotation {get;} = 0f;
 
-        // Wether this Item is currently selected
+        // Wether this item is currently selected
         public bool IsSelected {
             get {return isSelected && ((MenuList)ParentContainer).IsFocused;}
             set {isSelected = value;}
@@ -100,7 +106,9 @@ namespace GSMXtended {
                 effectScale = targetEffectScale;
             }
 
-            SecondaryColor = ((MenuList)ParentContainer).SelectedColor;
+            if(ParentContainer is MenuList)
+                SecondaryColor = ((MenuList)ParentContainer).SelectedColor;
+                
             base.update(gameTime);
         }
     }

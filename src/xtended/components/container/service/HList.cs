@@ -10,26 +10,16 @@ namespace GSMXtended {
     /// => TODO
     public class HList : MenuList {
         public HList(params Control[] items) : base(items) {
-            KeyPressedEvent += (sender, args) => {
-                if(!IsFocused || InputLocked) return;
-                if(args.KeyboardState != null && args.KeyboardState.Value.IsKeyDown(Keys.Left)
-                || args.GamePadState != null && (args.GamePadState.Value.IsButtonDown(Buttons.DPadLeft)
-                || args.GamePadState.Value.IsButtonDown(Buttons.LeftThumbstickLeft))) {
-                    select(-1);
-                    InputTimer = 0;
-                }
-
-                if(args.KeyboardState != null && args.KeyboardState.Value.IsKeyDown(Keys.Right)
-                || args.GamePadState != null && (args.GamePadState.Value.IsButtonDown(Buttons.DPadRight)
-                || args.GamePadState.Value.IsButtonDown(Buttons.LeftThumbstickRight))) {
-                    select();
-                    InputTimer = 0;
-                }
-            };
+            // default control keys/buttons
+            ControlNextKeys = new List<Keys>(new Keys[]{Keys.Right});
+            ControlNextButtons = new List<Buttons>(new Buttons[]{Buttons.DPadRight, Buttons.LeftThumbstickRight});
+            ControlPreviousKeys = new List<Keys>(new Keys[]{Keys.Left});
+            ControlPreviousButtons = new List<Buttons>(new Buttons[]{Buttons.DPadLeft, Buttons.LeftThumbstickLeft});
         }
 
         /// Updates width of this HPane
-        public override void update(GameTime time) {
+        public override void align() {
+            base.align();
             if(Managed && (PercentWidth < 0 || PercentHeight < 0)) {
                 // width always as small as possible
                 int w = 0, wMax = 0, hMax = 0;
@@ -47,11 +37,11 @@ namespace GSMXtended {
                 if(PercentWidth < 0) Width = IsStatic ? w : wMax;
                 if(PercentHeight < 0) Height = hMax;
             }
-
-            base.update(time);
         }
 
-        protected override void onUpdate(ScreenComponent child) {
+        protected override void alignChild(ScreenComponent child) {
+            base.alignChild(child);
+            
             if(IsStatic) {
                 HPane.align(this, child);
                 return;

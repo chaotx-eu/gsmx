@@ -14,7 +14,8 @@ namespace GSMXtended {
         }
 
         /// Updates width of this HPane
-        public override void update(GameTime time) {
+        public override void align() {
+            base.align();
             if(Managed && (PercentWidth < 0 || PercentHeight < 0)) {
                 int w = 0, h = 0;
                 Children.ToList().ForEach(c => {
@@ -25,12 +26,11 @@ namespace GSMXtended {
                 if(PercentWidth < 0) Width = w;
                 if(PercentHeight < 0) Height = h;
             }
-
-            base.update(time);
         }
 
         /// Aligns children horizontally (similar to HBox in JavaFX)
-        protected override void onUpdate(ScreenComponent child) {
+        protected override void alignChild(ScreenComponent child) {
+            base.alignChild(child);
             align(this, child);
         }
 

@@ -20,12 +20,12 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/gamefont.spritefont
 
-#begin fonts/menufont.spritefont
+#begin fonts/menu_font1.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:fonts/menufont.spritefont
+/build:fonts/menu_font1.spritefont
 
 #begin images/background.png
 /importer:TextureImporter

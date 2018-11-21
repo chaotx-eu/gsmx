@@ -57,11 +57,12 @@ namespace GSMXtended {
         public override void LoadContent() {
             if(Content == null)
                 Content = new ContentManager(ScreenManager.Game.Services, "Content");
-
+                
             ImageBatch = new SpriteBatch(ScreenManager.GraphicsDevice);
             FontBatch = new SpriteBatch(ScreenManager.GraphicsDevice);
             BlankTexture = Content.Load<Texture2D>("images/blank");
             MainContainer.load();
+            MainContainer.init();
         }
 
         /// Updates the main container and its components
@@ -90,7 +91,7 @@ namespace GSMXtended {
 
         /// Helper to apply same alpha value to a screen component
         /// and all its children in case it is a container (recursive)
-        protected void applyAlpha(ScreenComponent component, float alpha) {
+        public static void applyAlpha(ScreenComponent component, float alpha) {
             component.Alpha = alpha;
 
             if(component is Container)

@@ -19,13 +19,6 @@ namespace GSMXtended {
             ControlPreviousKeys = new List<Keys>(new Keys[]{Keys.Up});
             ControlPreviousButtons = new List<Buttons>(new Buttons[]{Buttons.DPadUp, Buttons.LeftThumbstickUp});
         }
-
-        /// Public wrapper for the add method which only
-        /// allows controls to be added others will be ignored
-        public new void add(params ScreenComponent[] items) {
-            foreach(ScreenComponent sc in items)
-                if(sc is Control) base.add(sc);
-        }
         
         public override void align() {
             base.align();

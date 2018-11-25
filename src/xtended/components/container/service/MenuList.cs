@@ -243,6 +243,14 @@ namespace GSMXtended {
             };
         }
 
+        /// TODO (allow any component)
+        /// Public wrapper for the add method which only
+        /// allows controls to be added others will be ignored
+        public new void add(params ScreenComponent[] items) {
+            foreach(ScreenComponent sc in items)
+                if(sc is Control) base.add(sc);
+        }
+
         /// Selects the item at the specific index,
         /// if index is negative the value will be
         /// subtracted from the current selected index

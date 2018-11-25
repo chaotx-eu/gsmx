@@ -4,10 +4,8 @@ namespace GSMXtended {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Input;
     
-    /// Holds a list of items and draws them vertically
-    /// aligned with the selected item beeing centered
-    /// and the outer items fading out
-    /// => TODO
+    /// Contains a horizontal list of controls and
+    /// offers the ability to select and activate them
     public class HList : MenuList {
         public HList(params Control[] items) : base(items) {
             // default control keys/buttons

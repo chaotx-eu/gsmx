@@ -18,32 +18,12 @@ namespace GSMXtended {
         /// Secondary color of this item
         public Color SecondaryColor {get; set;}
 
-        // TODO
-        /// The padding of this item. Will not be affected
-        /// by scaling e.g. if width*scale > basewidth + padding
-        /// no padding will be applied
-        // public Vector4 Padding {get; set;}
-
-        /// The scaling of this item
-        private float scale, targetScale = 1f;
-        public virtual float Scale {
-            get {return scale;}
-            set {targetScale = value;}
-        }
-
         /// Scaling used for effects and similiar, size
-        /// attributes must be mutliplied with this on demand
-        private float effectScale, targetEffectScale = 1f;
-        public float EffectScale {
-            get {return effectScale + ScaleMod;}
-            set {targetEffectScale = value;}
+        /// attributes may be mutliplied with this on demand
+        public override float EffectScale {
+            get {return base.EffectScale + ScaleMod;}
+            set {base.EffectScale = value;}
         }
-
-        /// Target scale value
-        public float TargetScale {get {return targetScale;}}
-
-        /// Target effect scale value
-        public float TargetEffectScale {get {return targetEffectScale;}}
 
         /// Width of the item in pixels without any scaling applied
         public virtual int BaseWidth {get {return Width;}}
@@ -56,17 +36,13 @@ namespace GSMXtended {
         ///      -> see BesmashContent.MapObject for how its done
         public virtual float Rotation {get;} = 0f;
 
-        // Wether this item is currently selected
+        /// Wether this item is currently selected
         public bool IsSelected {
-            get {return isSelected && ((MenuList)ParentContainer).IsFocused;}
+            get {return isSelected
+                && (!(ParentContainer is MenuList)
+                || ((MenuList)ParentContainer).IsFocused);}
             set {isSelected = value;}
         }
-
-        /// How many milliseconds it would take to scale
-        /// this item from 0 to 1, values below 0 are
-        /// equivalent to 0 (for now this will also
-        /// affect the alpha value)
-        public int MillisPerScale {get; set;} = 456;
 
         /// Scaling modificator. Will be added to scale
         protected virtual float ScaleMod {get; set;} = 0f;
@@ -93,18 +69,6 @@ namespace GSMXtended {
             float pulsate = (float)Math.Sin(time * 6) + 1;
             ScaleMod = pulsate * 0.05f * selectionFade;
             ////////////////////////////////////////////////////////////////////////
-
-            // gradualy move the scale value towards target scale
-            if(MillisPerScale > 0) {
-                float fragment = (float)gameTime.ElapsedGameTime.Milliseconds/MillisPerScale;
-                if(scale < targetScale) scale = Math.Min(targetScale, scale+fragment);
-                if(scale > targetScale) scale = Math.Max(targetScale, scale-fragment);
-                if(effectScale < targetEffectScale) effectScale = Math.Min(targetEffectScale, effectScale+fragment);
-                if(effectScale > targetEffectScale) effectScale = Math.Max(targetEffectScale, effectScale-fragment);
-            } else {
-                scale = targetScale;
-                effectScale = targetEffectScale;
-            }
 
             if(ParentContainer is MenuList)
                 SecondaryColor = ((MenuList)ParentContainer).SelectedColor;

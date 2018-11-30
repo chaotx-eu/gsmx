@@ -4,7 +4,7 @@ namespace GSMXtended {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Input;
     
-    /// Contains a horizontal list of controls and
+    /// Contains a horizontal list of components and
     /// offers the ability to select and activate them
     public class HList : MenuList {
         public HList(params Control[] items) : base(items) {
@@ -18,10 +18,10 @@ namespace GSMXtended {
         /// Updates width of this HPane
         public override void align() {
             base.align();
-            if(Managed && (PercentWidth < 0 || PercentHeight < 0)) {
+            if(PercentWidth < 0 || PercentHeight < 0) {
                 // width always as small as possible
                 int w = 0, wMax = 0, hMax = 0;
-                foreach(Control c in Children) {
+                foreach(ScreenComponent c in Children) {
                     int index_child = Children.IndexOf(c);
                     int index_selected = SelectedItem != null ? Children.IndexOf(SelectedItem) : -1;
                     int diff = index_selected < 0 ? 0 : Math.Abs(index_selected - index_child);
@@ -41,36 +41,32 @@ namespace GSMXtended {
             base.alignChild(child);
             
             if(IsStatic) {
-                HPane.align(this, child);
+                Container.hAlign(this, child);
                 return;
             }
 
-            if(!(child is MenuItem)) return; // for safety reasons (TODO)
-            MenuItem item = (MenuItem)child;
-            HPane.align(this, item);
-
-            if(item == SelectedItem) {
-                item.EffectAlpha = 1f;
-                item.EffectScale = 1f;
-                item.HAlignment = HAlignment.Center;
+            Container.hAlign(this, child);
+            if(child == SelectedItem) {
+                Container.applyScale(child, Scale);
+                Container.applyEffectAlpha(child, EffectAlpha);
+                child.HAlignment = HAlignment.Center;
             } else if(SelectedItem != null) {
                 // realign item x-coordinate relative to selected item
-                int item_index = Children.IndexOf(item);
+                int item_index = Children.IndexOf(child);
                 int selected_index = Children.IndexOf(SelectedItem);
-                item.HAlignment = HAlignment.Left;
+                child.HAlignment = HAlignment.Left;
 
-                MenuItem other = (MenuItem)Children[item_index + (
-                    item_index > selected_index ? -1 : 1)];
+                ScreenComponent other = Children[item_index
+                    + (item_index > selected_index ? -1 : 1)];
 
-                item.X = other.X + (item_index > selected_index
-                    ? other.Width*(other == SelectedItem ? 1 : other.EffectScale)
-                    : -item.Width*item.EffectScale);
+                child.X = other.X + (item_index > selected_index
+                    ? other.Width : -child.Width);
 
                 // fade and scale items out of range away
                 int diff = Math.Abs(selected_index - item_index);
                 float alpha = 1f - Math.Min(1f, (float)diff/(VisibleRange+1));
-                ((MenuItem)child).EffectAlpha = alpha;
-                ((MenuItem)child).EffectScale = alpha;
+                Container.applyScale(child, alpha*Scale);
+                Container.applyEffectAlpha(child, alpha*EffectAlpha);
             }
         }
     }

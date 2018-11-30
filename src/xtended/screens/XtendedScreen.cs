@@ -23,7 +23,7 @@ namespace GSMXtended {
             get {return alpha;}
             set {
                 alpha = value;
-                applyAlpha(MainContainer, value);
+                Container.applyAlpha(MainContainer, value);
             }
         }
 
@@ -51,6 +51,10 @@ namespace GSMXtended {
         public XtendedScreen(Container mainContainer) {
             MainContainer = mainContainer;
             MainContainer.ParentScreen = this;
+
+            // Since the alignment property has no effect within
+            // a screen this should always be the prefered setting
+            MainContainer.PercentWidth = MainContainer.PercentHeight = 100;
         }
 
         /// Loads required contend for this screen and its components
@@ -87,16 +91,6 @@ namespace GSMXtended {
         /// but only if it is active and focused
         public override void HandleInput(InputState inputState) {
             MainContainer.handleInput(inputState);
-        }
-
-        /// Helper to apply same alpha value to a screen component
-        /// and all its children in case it is a container (recursive)
-        public static void applyAlpha(ScreenComponent component, float alpha) {
-            component.Alpha = alpha;
-
-            if(component is Container)
-                foreach(ScreenComponent child in ((Container)component).Children)
-                    applyAlpha(child, alpha);
         }
     }
 }

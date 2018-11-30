@@ -7,7 +7,7 @@ namespace GSMXtended {
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
 
-    /// Contains a vertical list of controls and
+    /// Contains a vertical list of components and
     /// offers the ability to select and activate them
     public class VList : MenuList {
         public VList(params Control[] items) : base(items) {
@@ -22,10 +22,10 @@ namespace GSMXtended {
         
         public override void align() {
             base.align();
-            if(Managed && (PercentHeight < 0 || PercentWidth < 0)) {
+            if(PercentHeight < 0 || PercentWidth < 0) {
                 // height always as small as possible
                 int h = 0, wMax = 0, hMax = 0;
-                foreach(Control c in Children) {
+                foreach(ScreenComponent c in Children) {
                     int index_child = Children.IndexOf(c);
                     int index_selected = SelectedItem != null ? Children.IndexOf(SelectedItem) : -1;
                     int diff = index_selected < 0 ? 0 : Math.Abs(index_selected - index_child);
@@ -45,36 +45,32 @@ namespace GSMXtended {
             base.alignChild(child);
             
             if(IsStatic) {
-                VPane.align(this, child);
+                Container.vAlign(this, child);
                 return;
             }
 
-            if(!(child is MenuItem)) return; // TODO
-            MenuItem item = (MenuItem)child;
-            VPane.align(this, item);
-
-            if(item == SelectedItem) {
-                item.EffectAlpha = 1f;
-                item.EffectScale = 1f;
-                item.VAlignment = VAlignment.Center;
-            } else if(item != null) {
+            Container.vAlign(this, child);
+            if(child == SelectedItem) {
+                Container.applyScale(child, Scale);
+                Container.applyEffectAlpha(child, EffectAlpha);
+                child.VAlignment = VAlignment.Center;
+            } else if(child != null) {
                 // realign item y-coordinate relative to selected item
                 int item_index = Children.IndexOf(child);
                 int selected_index = Children.IndexOf(SelectedItem);
-                item.VAlignment = VAlignment.Top;
+                child.VAlignment = VAlignment.Top;
 
-                MenuItem other = (MenuItem)Children[item_index + (
-                    item_index > SelectedIndex ? -1 : 1)];
+                ScreenComponent other = Children[item_index
+                    + (item_index > SelectedIndex ? -1 : 1)];
 
-                item.Y = other.Y + (item_index > selected_index
-                    ? other.Height*(other == SelectedItem ? 1 : other.EffectScale)
-                    : -item.Height*item.EffectScale);
+                child.Y = other.Y + (item_index > selected_index
+                    ? other.Height : -child.Height);
 
                 // fade and scale items out of range away
                 int diff = Math.Abs(selected_index - item_index);
                 float alpha = 1f - Math.Min(1f, (float)diff/(VisibleRange+1));
-                item.EffectAlpha = alpha;
-                item.EffectScale = alpha;
+                Container.applyScale(child, alpha*Scale);
+                Container.applyEffectAlpha(child, alpha*EffectAlpha);
             }
         }
     }

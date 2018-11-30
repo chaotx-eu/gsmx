@@ -4,9 +4,9 @@ namespace GSMXtended {
     /// Event arguments passed to selected item events
     public class SelectedEventArgs : EventArgs {
         public int SelectedIndex {get;}
-        public Control SelectedItem {get;}
+        public ScreenComponent SelectedItem {get;}
 
-        public SelectedEventArgs(int selectedIndex, Control selectedItem) {
+        public SelectedEventArgs(int selectedIndex, ScreenComponent selectedItem) {
             SelectedIndex = selectedIndex;
             SelectedItem = selectedItem;
         }

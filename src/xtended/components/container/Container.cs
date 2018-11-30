@@ -12,6 +12,23 @@ namespace GSMXtended {
     /// Base class for all containers in this lib
     /// capable of holding and managing other components
     public class Container : ScreenComponent {
+        // TODO test
+        public override float Scale {
+            get {return base.Scale;}
+            set {base.Scale = value;}
+        }
+
+        public override int Width {
+            get {return (int)(base.Width*
+                (PercentWidth > 0 ? Scale : 1));}
+        }
+
+        public override int Height {
+            get {return (int)(base.Height*
+                (PercentHeight > 0 ? Scale : 1));}
+        }
+        ////////////
+
         private XtendedScreen parentScreen;
         public override XtendedScreen ParentScreen {
             get {return parentScreen;}
@@ -43,22 +60,6 @@ namespace GSMXtended {
             add(items);
         }
 
-        /// Adds passed component(s) to this container
-        public void add(params ScreenComponent[] items) {
-            if(children == null) children = new List<ScreenComponent>();
-            items.ToList().ForEach(i => {
-                i.ParentContainer = this;
-                i.ParentScreen = ParentScreen;
-                children.Add(i);
-            });
-        }
-
-        /// Removes passed component(s) from this container
-        public void remove(params ScreenComponent[] items) {
-            if(children == null) return;
-            items.ToList().ForEach(i => children.Remove(i));
-        }
-
         /// Loads required ressources for components in
         /// this container
         public override void load() {
@@ -84,12 +85,10 @@ namespace GSMXtended {
             Children.ToList().ForEach(c => c.draw());
         }
 
-        /// Updates all managed components within this container
-        /// and its own size aswell if Managed is true and the
-        /// ParentContainer is null
+        /// Updates itself and all components within this container
         public override void update(GameTime time) {
             align();
-            Children.Where(c => c.Managed).ToList().ForEach(child => {
+            Children.ToList().ForEach(child => {
                 alignChild(child);
                 onUpdate(child);
                 child.update(time);
@@ -97,20 +96,36 @@ namespace GSMXtended {
             base.update(time);
         }
 
+        /// Adds passed component(s) to this container
+        public virtual void add(params ScreenComponent[] items) {
+            if(children == null) children = new List<ScreenComponent>();
+            items.ToList().ForEach(i => {
+                i.ParentContainer = this;
+                i.ParentScreen = ParentScreen;
+                children.Add(i);
+            });
+        }
+
+        /// Removes passed component(s) from this container
+        public virtual void remove(params ScreenComponent[] items) {
+            if(children == null) return;
+            items.ToList().ForEach(i => children.Remove(i));
+        }
+
         /// Sets the size of this container and aligns
         /// it relative to its parent
         public virtual void align() {
-            if(Managed && ParentContainer == null) {
+            if(ParentContainer == null) {
                 if(PercentWidth >= 0) Width =
-                    (int)((PercentWidth/100f)*ParentScreen.Width);
+                    ((int)((PercentWidth/100f)*ParentScreen.Width));
 
                 if(PercentHeight >= 0) Height =
-                    (int)((PercentHeight/100f)*ParentScreen.Height);
+                    ((int)((PercentHeight/100f)*ParentScreen.Height));
             }
         }
 
         /// Helper to align all children and set their size
-        public void alignChildren() {
+        public virtual void alignChildren() {
             Children.ToList().ForEach(child => {
                 alignChild(child);
                 if(child is Container) {
@@ -132,5 +147,128 @@ namespace GSMXtended {
 
         /// Gets called on each child within the update method
         protected virtual void onUpdate(ScreenComponent child) {}
+
+        /// Helper to apply alpha value to a screen component and
+        /// in case it is a container to all its children (recursive)
+        public static void applyAlpha(ScreenComponent child, float alpha) {
+            child.Alpha = alpha;
+
+            if(child is Container) ((Container)child)
+                .Children.ToList()
+                .ForEach(c => applyAlpha(c, alpha));
+        }
+
+        /// Helper to apply scale value to a screen component and
+        /// in case it is a container to all its children (recursive)
+        public static void applyScale(ScreenComponent child, float scale) {
+            child.Scale = scale*child.DefaultScale;
+            if(child is Container) ((Container)child)
+                .Children.ToList()
+                .ForEach(c => applyScale(c, scale));
+        }
+
+        /// Helper to apply effect alpha to a screen component and
+        /// in case it is a container to all its children (recursive)
+        public static void applyEffectAlpha(ScreenComponent child, float alpha) {
+            child.EffectAlpha = alpha;
+            if(child is Container) ((Container)child)
+                .Children.ToList()
+                .ForEach(c => applyEffectAlpha(c, alpha));
+        }
+
+        /// Helper to apply effect scale to a screen component and
+        /// in case it is a container to all its children (recursive)
+        public static void applyEffectScale(ScreenComponent child, float scale) {
+            child.EffectScale = scale;
+            if(child is Container) ((Container)child)
+                .Children.ToList()
+                .ForEach(c => applyEffectScale(c, scale));
+        }
+
+        /// Helper to align child within a parent container horizontally
+        public static void hAlign(Container parent, ScreenComponent child) {
+            float x;
+            if(child.HAlignment == HAlignment.Left) {
+                x = parent.X;
+
+                parent.Children.Where(
+                    c => parent.Children.IndexOf(c) < parent.Children.IndexOf(child)
+                    && c.HAlignment == HAlignment.Left).ToList()
+                        .ForEach(c => x += c.Width);
+            } else if(child.HAlignment == HAlignment.Right) {
+                x = parent.X + parent.Width - child.Width;
+
+                parent.Children.Where(
+                    c => parent.Children.IndexOf(c) > parent.Children.IndexOf(child)
+                    && c.HAlignment == HAlignment.Right).ToList()
+                        .ForEach(c => x -= c.Width);
+            } else { // default: centered
+                int lw = 0, rw = 0, cw = child.Width;
+
+                parent.Children.Where(c => c.HAlignment != HAlignment.Left
+                && c.HAlignment != HAlignment.Right).ToList().ForEach(c => {
+                    if(parent.Children.IndexOf(c) < parent.Children.IndexOf(child))
+                        lw += c.Width;
+
+                    if(parent.Children.IndexOf(c) > parent.Children.IndexOf(child))
+                        rw += c.Width;
+                });
+
+                x = (parent.X + parent.Width/2f) - (lw + rw + cw)/2f + lw;
+                // Example:
+                //        V (target x = 5), (Width := 17)
+                // [  ||| ||| || ||||| (13 -> lw = 3, rw = 7)  ]
+                //         ^ target child (cw = 3)
+                //
+                // x = Width/2 - (lw + rw + cw)/2 + lw
+                //   = (17/2) - (13/2) + 3 = 8 - 6 + 3 = 5
+            }
+
+            child.X = x;
+            child.Y = child.VAlignment == VAlignment.Bottom
+                ? parent.Y + parent.Height - child.Height
+                : child.VAlignment == VAlignment.Top ? parent.Y
+                : parent.Y + parent.Height/2f - child.Height/2f;
+        }
+
+        /// Helper to align a child within a parent container verticallly
+        public static void vAlign(Container parent, ScreenComponent child) {
+            float y;
+
+            if(child.VAlignment == VAlignment.Top) {
+                y = parent.Y;
+
+                parent.Children.Where(
+                    c => parent.Children.IndexOf(c) < parent.Children.IndexOf(child)
+                    && c.VAlignment == VAlignment.Top).ToList()
+                        .ForEach(c => y += c.Height);
+            } else if(child.VAlignment == VAlignment.Bottom) {
+                y = parent.Y + parent.Height - child.Height;
+
+                parent.Children.Where(
+                    c => parent.Children.IndexOf(c) > parent.Children.IndexOf(child)
+                    && c.VAlignment == VAlignment.Bottom).ToList()
+                        .ForEach(c => y -= c.Height);
+            } else { // default: centered
+                int th = 0, bh = 0, ch = child.Height;
+
+                parent.Children.Where(c => c.VAlignment != VAlignment.Top
+                && c.VAlignment != VAlignment.Bottom).ToList().ForEach(c => {
+                    if(parent.Children.IndexOf(c) < parent.Children.IndexOf(child))
+                        th += c.Height;
+
+                    if(parent.Children.IndexOf(c) > parent.Children.IndexOf(child))
+                        bh += c.Height;
+                });
+
+                y = (parent.Y + parent.Height/2f) - (th + bh + ch)/2f + th;
+            }
+
+            child.Y = y;
+            child.X = child.HAlignment == HAlignment.Right
+                ? parent.X + parent.Width - child.Width
+                : child.HAlignment == HAlignment.Left ? parent.X
+                : parent.X + parent.Width/2f - child.Width/2f;
+        }
     }
 }

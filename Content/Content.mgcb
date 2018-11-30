@@ -27,6 +27,13 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/menu_font1.spritefont
 
+#begin fonts/menu_font2.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/menu_font2.spritefont
+
 #begin images/background.png
 /importer:TextureImporter
 /processor:TextureProcessor

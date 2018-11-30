@@ -65,6 +65,40 @@ namespace GSMXtended {
             set {targetEffectAlpha = value;}
         }
 
+        /// The scaling of this component. Rather use default
+        /// scale to scale this component
+        private float scale, targetScale = 1f;
+        public virtual float Scale {
+            get {return scale;}
+            set {targetScale = value;}
+        }
+
+        /// Scaling used for effects and similiar, size
+        /// attributes may be mutliplied with this on demand
+        private float effectScale, targetEffectScale = 1f;
+        public virtual float EffectScale {
+            get {return effectScale;}
+            set {targetEffectScale = value;}
+        }
+
+        /// The default default scaling of this component. Use
+        /// this to set the scale on this object in case it may
+        /// be placed within a menu list
+        private float defaultScale = 1;
+        public float DefaultScale {
+            get {return defaultScale;} 
+            set {
+                defaultScale = value;
+                Scale = value;
+            }
+        }
+
+        /// Readonly target scale value
+        public virtual float TargetScale {get {return targetScale;}}
+
+        /// Readonly target effect scale value
+        public virtual float TargetEffectScale {get {return EffectScale;}}
+
         /// The color of this component
         private Color color;
         public virtual Color Color {
@@ -89,6 +123,12 @@ namespace GSMXtended {
         /// the background alpha from 0 to 1
         public int MillisPerAlpha {get; set;} = 640;
 
+        /// How many milliseconds it would take to scale
+        /// this item from 0 to 1, values below 0 are
+        /// equivalent to 0 (for now this will also
+        /// affect the alpha value)
+        public int MillisPerScale {get; set;} = 456;
+
         /// The horizontal alignment of this component
         /// if null the component will be centered
         public HAlignment HAlignment {get; set;}
@@ -96,11 +136,6 @@ namespace GSMXtended {
         /// The vertical alignment of this component
         /// if null the component will be centered
         public VAlignment VAlignment {get; set;}
-
-        /// Wether this component should calculate its position
-        /// and size dynamically based of its Alignment, PercentWidth
-        /// and -Height and the layout strategy of the ParentContainer
-        public bool Managed {get; set;} = true; // TODO not really in use anymore
 
         /// Event handler which gets triggered when a key or button is
         /// pressed while this item is selected/active
@@ -144,6 +179,18 @@ namespace GSMXtended {
             } else {
                 alpha = targetAlpha;
                 effectAlpha = targetEffectAlpha;
+            }
+
+            // gradualy move the scale value towards target scale
+            if(MillisPerScale > 0) {
+                fragment = (float)time.ElapsedGameTime.Milliseconds/MillisPerScale;
+                if(scale < targetScale) scale = Math.Min(targetScale, scale+fragment);
+                if(scale > targetScale) scale = Math.Max(targetScale, scale-fragment);
+                if(effectScale < targetEffectScale) effectScale = Math.Min(targetEffectScale, effectScale+fragment);
+                if(effectScale > targetEffectScale) effectScale = Math.Max(targetEffectScale, effectScale-fragment);
+            } else {
+                scale = targetScale;
+                effectScale = targetEffectScale;
             }
         }
 

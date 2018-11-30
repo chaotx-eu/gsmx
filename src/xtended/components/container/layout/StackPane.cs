@@ -12,7 +12,7 @@ namespace GSMXtended {
         /// Updates width of this StackPane
         public override void align() {
             base.align();
-            if(Managed && (PercentWidth < 0 || PercentHeight < 0)) {
+            if(PercentWidth < 0 || PercentHeight < 0) {
                 int w = 0, h = 0;
                 Children.ToList().ForEach(c => {
                     w = w < c.Width ? c.Width : w;

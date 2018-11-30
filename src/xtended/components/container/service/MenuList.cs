@@ -1,5 +1,6 @@
 namespace GSMXtended {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Input;
@@ -48,8 +49,8 @@ namespace GSMXtended {
         public List<Buttons> ControlPreviousButtons {get; set;}
 
         /// Currently selected item in this menu
-        private MenuItem selected, lastSelected;
-        public Control SelectedItem {get {return selected;}}
+        private ScreenComponent selected, lastSelected;
+        public ScreenComponent SelectedItem {get {return selected;}}
 
         /// Color of the selected item
         public Color SelectedColor {get; set;} = Color.Yellow;
@@ -58,11 +59,34 @@ namespace GSMXtended {
         /// focus and it was not focused before the InputTimer resets
         private bool isFocused;
         public bool IsFocused {
-            get {return isFocused;}
+            get {
+                bool parentFocused = true;
+                Container parent = ParentContainer;
+                while(parent != null) {
+                    if(parent is MenuList) {
+                        parentFocused = ((MenuList)parent).IsFocused;
+                        break;
+                    }
+
+                    parent = parent.ParentContainer;
+                }
+
+                return isFocused && parentFocused;
+            }
+
             set {
                 if(value && !isFocused) InputTimer = 0;
                 isFocused = value;
             }
+        }
+
+        protected void applyFocus(ScreenComponent child, bool focus) {
+            if(child is MenuList)
+                ((MenuList)child).IsFocused = focus;
+
+            if(child is Container)
+                ((Container)child).Children.ToList().ForEach(child2
+                    => applyFocus(child2, focus));
         }
 
         /// Wether this list is static i.e. all items
@@ -118,15 +142,18 @@ namespace GSMXtended {
                     lastSelectedIndex = selectedIndex;
                     lastSelected = selected;
                     selectedIndex = value;
-                    selected = (MenuItem)Children[value];
-                    selected.IsSelected = true;
+                    selected = Children[value];
+
+                    if(selected is MenuItem) ((MenuItem)selected).IsSelected = true;
+                    if(selected is MenuList) ((MenuList)selected).IsFocused = true;
                     onSelected(new SelectedEventArgs(selectedIndex, selected));
                 } catch(System.ArgumentOutOfRangeException) {
                     selected = null;
                 }
 
                 if(lastSelected != null && lastSelected != selected) {
-                    lastSelected.IsSelected = false;
+                    if(lastSelected is MenuItem) ((MenuItem)lastSelected).IsSelected = false;
+                    if(lastSelected is MenuList) ((MenuList)lastSelected).IsFocused = false;
                     onDeselected(new SelectedEventArgs(lastSelectedIndex, lastSelected));
                 }
             }
@@ -210,7 +237,7 @@ namespace GSMXtended {
                         if(lastButtons.Contains(button)) {
                             if(InputSingleMode) return;
                         } else lastButtons.Add(button);
-
+                        
                         onAction(new SelectedEventArgs(SelectedIndex, SelectedItem));
                         InputTimer = 0;
                         return;
@@ -243,12 +270,9 @@ namespace GSMXtended {
             };
         }
 
-        /// TODO (allow any component)
-        /// Public wrapper for the add method which only
-        /// allows controls to be added others will be ignored
-        public new void add(params ScreenComponent[] items) {
-            foreach(ScreenComponent sc in items)
-                if(sc is Control) base.add(sc);
+        public override void add(params ScreenComponent[] items) {
+            base.add(items);
+            select(selectedIndex);
         }
 
         /// Selects the item at the specific index,

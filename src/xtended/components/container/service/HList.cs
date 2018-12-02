@@ -7,7 +7,7 @@ namespace GSMXtended {
     /// Contains a horizontal list of components and
     /// offers the ability to select and activate them
     public class HList : MenuList {
-        public HList(params Control[] items) : base(items) {
+        public HList(params ScreenComponent[] items) : base(items) {
             // default control keys/buttons
             ControlNextKeys = new List<Keys>(new Keys[]{Keys.Right});
             ControlNextButtons = new List<Buttons>(new Buttons[]{Buttons.DPadRight, Buttons.LeftThumbstickRight});

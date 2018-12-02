@@ -159,7 +159,7 @@ namespace GSMXtended {
             }
         }
 
-        public MenuList(params Control[] items) : base(items) {
+        public MenuList(params ScreenComponent[] items) : base(items) {
             // size of this pane depends on its children
             PercentWidth = PercentHeight = -1;
 

@@ -10,7 +10,7 @@ namespace GSMXtended {
     /// Contains a vertical list of components and
     /// offers the ability to select and activate them
     public class VList : MenuList {
-        public VList(params Control[] items) : base(items) {
+        public VList(params ScreenComponent[] items) : base(items) {
             IsStatic = true;
 
             // default selection keys/buttons

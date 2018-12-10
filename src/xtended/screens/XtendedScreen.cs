@@ -17,15 +17,9 @@ namespace GSMXtended {
         /// Content manager of this screen
         public ContentManager Content {get; set;}
 
-        /// The alpha value of this screen and all its content
-        private float alpha, targetAlpha = 1f;
-        public float Alpha {
-            get {return alpha;}
-            set {
-                alpha = value;
-                Container.applyAlpha(MainContainer, value);
-            }
-        }
+        /// The alpha value of this screen which will be
+        /// applied to its MainContainer and all its children
+        public float Alpha {get; set;} = 1;
 
         /// Width of the screen
         public int Width { get {

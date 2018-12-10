@@ -28,12 +28,11 @@ namespace GSMXtended {
                 (PercentHeight > 0 ? Scale : 1));}
         }
         ////////////
-
-        private XtendedScreen parentScreen;
+        
         public override XtendedScreen ParentScreen {
-            get {return parentScreen;}
+            get {return base.ParentScreen;}
             set{
-                parentScreen = value;
+                base.ParentScreen = value;
                 Children.ToList().ForEach(c => c.ParentScreen = value);
             }
         }

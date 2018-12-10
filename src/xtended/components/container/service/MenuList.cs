@@ -96,13 +96,13 @@ namespace GSMXtended {
         /// defined in VisibleRange fading away)
         public bool IsStatic {get; set;} = false;
 
-        /// The time past in milliseconds since the last valid input
+        /// The time passed in milliseconds since the last
+        /// valid input
         public int InputTimer {get; set;}
 
-        /// Wether the user input is locked for this list,
-        /// setting this to false will reset the input timer
+        /// Wether the user input is locked for this list
         public bool InputLocked {
-            get {return InputTimer < MillisPerInput;}
+            get {return !IsFocused || InputTimer < MillisPerInput;}
         }
 
         /// If true a pressed key/button has to be released first
@@ -138,7 +138,8 @@ namespace GSMXtended {
         public int SelectedIndex {
             get {return selectedIndex;}
             set {
-                try {
+                // try {
+                if(value >= 0 && value < Children.Count) {
                     lastSelectedIndex = selectedIndex;
                     lastSelected = selected;
                     selectedIndex = value;
@@ -147,7 +148,8 @@ namespace GSMXtended {
                     if(selected is MenuItem) ((MenuItem)selected).IsSelected = true;
                     if(selected is MenuList) ((MenuList)selected).IsFocused = true;
                     onSelected(new SelectedEventArgs(selectedIndex, selected));
-                } catch(System.ArgumentOutOfRangeException) {
+                // } catch(System.ArgumentOutOfRangeException) {
+                } else {
                     selected = null;
                 }
 

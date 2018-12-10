@@ -113,7 +113,12 @@ namespace GSMXtended {
         public float TargetY {get {return targetY;}}
 
         /// Target alpha value
-        public float TargetAlpha {get {return targetAlpha;}}
+        public float TargetAlpha {
+            get {return targetAlpha
+                *(ParentScreen != null
+                ? ParentScreen.Alpha : 1);
+            }
+        }
 
         /// How many pixels per second this component can
         /// move, values below < 0 are equivalent to inifinite
@@ -142,7 +147,7 @@ namespace GSMXtended {
         public event KeyEventHandler KeyPressedEvent;
 
         /// Number of immediate updates in which positioning
-        /// (TODO sizing and scaling?) will be immediate
+        /// (TODO sizing and scaling?) will be immediate (deprecated)
         protected int immediateUpdates = 3; // Three are at least required for
                                             // everything to align properly
 
@@ -172,12 +177,12 @@ namespace GSMXtended {
 
             if(MillisPerAlpha > 0) {
                 fragment = (float)time.ElapsedGameTime.Milliseconds/MillisPerAlpha;
-                if(alpha < targetAlpha) alpha = Math.Min(targetAlpha, alpha+fragment);
-                if(alpha > targetAlpha) alpha = Math.Max(targetAlpha, alpha-fragment);
+                if(alpha < TargetAlpha) alpha = Math.Min(TargetAlpha, alpha+fragment);
+                if(alpha > TargetAlpha) alpha = Math.Max(TargetAlpha, alpha-fragment);
                 if(effectAlpha < targetEffectAlpha) effectAlpha = Math.Min(targetEffectAlpha, effectAlpha+fragment);
                 if(effectAlpha > targetEffectAlpha) effectAlpha = Math.Max(targetEffectAlpha, effectAlpha-fragment);
             } else {
-                alpha = targetAlpha;
+                alpha = TargetAlpha;
                 effectAlpha = targetEffectAlpha;
             }
 

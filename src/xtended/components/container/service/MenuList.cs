@@ -75,7 +75,7 @@ namespace GSMXtended {
             }
 
             set {
-                if(value && !isFocused) InputTimer = 0;
+                if(value && !isFocused) InputTimer = -MillisPerInput;
                 isFocused = value;
             }
         }
@@ -138,7 +138,6 @@ namespace GSMXtended {
         public int SelectedIndex {
             get {return selectedIndex;}
             set {
-                // try {
                 if(value >= 0 && value < Children.Count) {
                     lastSelectedIndex = selectedIndex;
                     lastSelected = selected;
@@ -148,7 +147,6 @@ namespace GSMXtended {
                     if(selected is MenuItem) ((MenuItem)selected).IsSelected = true;
                     if(selected is MenuList) ((MenuList)selected).IsFocused = true;
                     onSelected(new SelectedEventArgs(selectedIndex, selected));
-                // } catch(System.ArgumentOutOfRangeException) {
                 } else {
                     selected = null;
                 }

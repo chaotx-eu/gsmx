@@ -182,8 +182,10 @@
 
             // init screen manager
             screenManager = new ScreenManager(this);
-            screenManager.AddScreen(new BackgroundScreen("images/besmash_background"), null);
-            screenManager.AddScreen(mainScreen, null);
+            // screenManager.AddScreen(new BackgroundScreen("images/besmash_background"), null);
+            // screenManager.AddScreen(mainScreen, null);
+            LoadingScreen.Load(screenManager, true, null,
+                new BackgroundScreen("images/besmash_background"), mainScreen);
             Components.Add(screenManager);
         }
 

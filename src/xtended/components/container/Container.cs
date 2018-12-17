@@ -80,7 +80,7 @@ namespace GSMXtended {
             base.draw();
             Rectangle destination = new Rectangle((int)X, (int)Y, Width, Height);
             SpriteBatch batch = ParentScreen.ImageBatch;
-            batch.Draw(Texture, destination, null, Color);
+            if(Texture != null) batch.Draw(Texture, destination, null, Color);
             Children.ToList().ForEach(c => c.draw());
         }
 

@@ -1,0 +1,30 @@
+@startuml
+title GSMXtended Class-Diagramm
+
+GameScreen <|-- XtendedScreen
+note top of GameScreen: GameStateManagement
+
+XtendedScreen <|-- XtendedDialog
+ScreenComponent <|-- Control
+ScreenComponent <|-- Container
+ScreenComponent : load()
+ScreenComponent : init()
+ScreenComponent : update(GameTime)
+ScreenComponent : draw()
+ScreenComponent : handleInput()
+
+Control <|-- MenuItem
+MenuItem <|-- TextItem
+MenuItem <|-- ImageItem
+
+Container <|-- GridPane
+Container <|-- HPane
+Container <|-- VPaner
+Container <|-- MenuList
+MenuList <|-- HList
+MenuList <|-- VList
+
+XtendedScreen --> "1" Container : main container
+Container --> "*" ScreenComponent
+
+@enduml

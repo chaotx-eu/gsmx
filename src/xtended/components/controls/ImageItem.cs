@@ -49,11 +49,21 @@ namespace GSMXtended {
             PercentWidth = PercentHeight = -1; // no effect on ImageItem
         }
 
+        public ImageItem(Texture2D image)
+        : this(image, null) {}
+
+        public ImageItem(Texture2D image, Rectangle? sourceRectangle)
+        : this("", sourceRectangle) {
+            Image = image;
+        }
+
         /// Loads the image file
         public override void load() {
             base.load();
-            ContentManager content =  ParentScreen.ScreenManager.Game.Content;
-            Image = content.Load<Texture2D>(ImageFile);
+
+            if(Image == null) Image =
+                ParentScreen.ScreenManager.Game
+                .Content.Load<Texture2D>(ImageFile);
 
             // checks if size attributes are valid and fixes them if not
             if(Width < 0) Width = SourceRectangle.HasValue

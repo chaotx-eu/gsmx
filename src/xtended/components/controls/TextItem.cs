@@ -41,11 +41,16 @@ namespace GSMXtended {
             PercentWidth = PercentHeight = -1;
         }
 
+        public TextItem(string text, SpriteFont font) : this(text, "") {
+            Font = font;
+        }
+
         /// Loads the font file
         public override void load() {
             base.load();
-            ContentManager content =  ParentScreen.ScreenManager.Game.Content;
-            Font = content.Load<SpriteFont>(FontFile);
+            if(Font == null) Font =
+                ParentScreen.ScreenManager.Game
+                .Content.Load<SpriteFont>(FontFile);
         }
 
         /// Draws the text to the screen

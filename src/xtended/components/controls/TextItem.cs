@@ -35,6 +35,12 @@ namespace GSMXtended {
             get {return (int)(Font.MeasureString(Text).Y);}
         }
 
+        public TextItem() : this("") {}
+        public TextItem(string text) {
+            Text = text;
+            PercentWidth = PercentHeight = -1;
+        }
+
         public TextItem(string text, string fontFile) {
             Text = text;
             FontFile = fontFile;

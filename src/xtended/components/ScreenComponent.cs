@@ -53,7 +53,7 @@ namespace GSMXtended {
         /// The alpha value of this components color
         private float alpha, targetAlpha = 1f;
         public virtual float Alpha {
-            get {return alpha*EffectAlpha;}
+            get {return alpha*EffectAlpha*AlphaMod;}
             set {targetAlpha = value;}
         }
 
@@ -63,6 +63,18 @@ namespace GSMXtended {
         public virtual float EffectAlpha {
             get {return effectAlpha;}
             set {targetEffectAlpha = value;}
+        }
+
+        /// Alpha value modifier which is multiplied
+        /// with alpha and the alpha mod from the
+        /// parent container/screen of this component
+        private float alphaMod = 1f, targetAlphaMod = 1f;
+        public float AlphaMod {
+            get {
+                return alphaMod*(ParentContainer != null
+                    ? ParentContainer.AlphaMod : 1);
+            }
+            set {targetAlphaMod = value;}
         }
 
         /// The scaling of this component. Rather use default
@@ -99,6 +111,9 @@ namespace GSMXtended {
         /// Readonly target effect scale value
         public virtual float TargetEffectScale {get {return EffectScale;}}
 
+        /// Readonly target alpha mod value
+        public float TargetAlphaMod {get {return alphaMod;}}
+
         /// The color of this component
         private Color color;
         public virtual Color Color {
@@ -122,17 +137,47 @@ namespace GSMXtended {
 
         /// How many pixels per second this component can
         /// move, values below < 0 are equivalent to inifinite
-        public int PixelPerSecond {get; set;} = 288;
+        public int PixelPerSecond {
+            get {return (int)(pixelPerSecond*PPSFactor);}
+            set {pixelPerSecond = value;}
+        }
 
         /// How many milliseconds it will take to fade
         /// the background alpha from 0 to 1
-        public int MillisPerAlpha {get; set;} = 640;
+        public int MillisPerAlpha {
+            get {return (int)(millisPerAlpha*MPAFactor);}
+            set {millisPerAlpha = value;}
+        }
 
         /// How many milliseconds it would take to scale
         /// this item from 0 to 1, values below 0 are
         /// equivalent to 0 (for now this will also
         /// affect the alpha value)
-        public int MillisPerScale {get; set;} = 456;
+        public int MillisPerScale {
+            get {return (int)(millisPerScale*MPSFactor);}
+            set {millisPerScale = value;}
+        }
+
+        /// Factor PixelPerSecond is multiplied with
+        public float PPSFactor {
+            get {return ppsFactor*(ParentContainer != null
+                ? ParentContainer.PPSFactor : 1);}
+            set {ppsFactor = value;}
+        }
+
+        /// Factor MillisPerAlpha is multiplied with
+        public float MPAFactor {
+            get {return mpaFactor*(ParentContainer != null
+                ? ParentContainer.MPAFactor : 1);}
+            set {mpaFactor = value;}
+        }
+
+        /// Factor MillisPerScale is multiplied with
+        public float MPSFactor {
+            get {return mpsFactor*(ParentContainer != null
+                ? ParentContainer.MPSFactor : 1);}
+            set {mpsFactor = value;}
+        }
 
         /// The horizontal alignment of this component
         /// if null the component will be centered
@@ -146,10 +191,12 @@ namespace GSMXtended {
         /// pressed while this item is selected/active
         public event KeyEventHandler KeyPressedEvent;
 
-        /// Number of immediate updates in which positioning
-        /// (TODO sizing and scaling?) will be immediate (deprecated)
-        protected int immediateUpdates = 3; // Three are at least required for
-                                            // everything to align properly
+        private int pixelPerSecond = 288;
+        private int millisPerAlpha = 640;
+        private int millisPerScale = 456;
+        private float ppsFactor = 1;
+        private float mpaFactor = 1;
+        private float mpsFactor = 1;
 
         /// Loads the required ressources
         public virtual void load() {}
@@ -163,7 +210,7 @@ namespace GSMXtended {
         public virtual void update(GameTime time) {
             float fragment;
 
-            if(immediateUpdates <= 0 && PixelPerSecond > 0) {
+            if(PixelPerSecond > 0) {
                 fragment = (float)(time.ElapsedGameTime.Milliseconds/1000f)*PixelPerSecond;
                 if(x < targetX) x = Math.Min(targetX, x+fragment);
                 if(x > targetX) x = Math.Max(targetX, x-fragment);
@@ -172,7 +219,6 @@ namespace GSMXtended {
             } else if(x != targetX || y != targetY) {
                 x = targetX;
                 y = targetY;
-                if(immediateUpdates > 0) --immediateUpdates;
             }
 
             if(MillisPerAlpha > 0) {
@@ -181,9 +227,12 @@ namespace GSMXtended {
                 if(alpha > TargetAlpha) alpha = Math.Max(TargetAlpha, alpha-fragment);
                 if(effectAlpha < targetEffectAlpha) effectAlpha = Math.Min(targetEffectAlpha, effectAlpha+fragment);
                 if(effectAlpha > targetEffectAlpha) effectAlpha = Math.Max(targetEffectAlpha, effectAlpha-fragment);
+                if(alphaMod < targetAlphaMod) alphaMod = Math.Min(targetAlphaMod, alphaMod+fragment);
+                if(alphaMod > targetAlphaMod) alphaMod = Math.Max(targetAlphaMod, alphaMod-fragment);
             } else {
                 alpha = TargetAlpha;
                 effectAlpha = targetEffectAlpha;
+                alphaMod = targetAlphaMod;
             }
 
             // gradualy move the scale value towards target scale

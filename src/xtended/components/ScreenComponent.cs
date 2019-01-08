@@ -109,10 +109,10 @@ namespace GSMXtended {
         public virtual float TargetScale {get {return targetScale;}}
 
         /// Readonly target effect scale value
-        public virtual float TargetEffectScale {get {return EffectScale;}}
+        public virtual float TargetEffectScale {get {return targetEffectScale;}}
 
         /// Readonly target alpha mod value
-        public float TargetAlphaMod {get {return alphaMod;}}
+        public float TargetAlphaMod {get {return targetAlphaMod;}}
 
         /// The color of this component
         private Color color;
